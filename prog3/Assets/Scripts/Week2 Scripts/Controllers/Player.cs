@@ -39,7 +39,7 @@ public class Player : MonoBehaviour
     }
 
     //task B
-    public void SpawnBombTrail(float inBombSPacing, int inNumberOfBombs)
+    public void SpawnBombTrail(float inBombSpacing, int inNumberOfBombs)
     { 
         for (int i = 1; i <= inNumberOfBombs) ;
         {
