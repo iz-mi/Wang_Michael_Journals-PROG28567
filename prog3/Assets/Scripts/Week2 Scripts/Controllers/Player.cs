@@ -1,51 +1,120 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class Player : MonoBehaviour
 {
+    public List<Transform> asteroidTransforms;
     public Transform enemyTransform;
     public GameObject bombPrefab;
-    public List<Transform> asteroidTransforms;
+    public Transform bombsTransform;
 
-    public Vector2 bombOffset;
+    //set initial player movespeed
+    //public float moveSpeed = 10f;
 
-    public float bombTrailSpacing = 5f;
-    public int numberOfTrailBombs = 5;
+    //set max player movespeed
+    public float maxSpeed = 5f;
+    public float accelerationTime = 1f;
+    public float decelerationTime = 1f;
 
-    // Update is called once per frame
+    float acceleration;
+    float deceleration;
+
+    public float verticalMovement = 0f;
+    public float horizontalMovement = 0f;
+
     void Update()
     {
-        //check for B input, then execute SpawnBombAtOffset
-        if (Input.GetKeyDown(KeyCode.B))
-        {
-            SpawnBombAtOffset(bombOffset);
-        }
-
-        //check for T input, then execute SpawnBombTrail
-        if (Input.GetKeyDown(KeyCode.T))
-        {
-            SpawnBombTrail(bombTrailSpacing, numberOfTrailBombs)
-        }
+        acceleration = maxSpeed / accelerationTime;
+        deceleration = maxSpeed / decelerationTime;
+        PlayerMovement();
     }
 
-    //task A
-    public void SpawnBombAtOffset(Vector3 inOffset)
+    public void PlayerMovement()
     {
-        //set offset relative to player's location
-        Vector3 bombOffset = transform.position + inOffset;
-
-        //instantiate prefab
-        Instantiate(bombPrefab, bombOffset, Quaternion.identity);
-    }
-
-    //task B
-    public void SpawnBombTrail(float inBombSpacing, int inNumberOfBombs)
-    { 
-        for (int i = 1; i <= inNumberOfBombs) ;
+        //vertical movement
+        if (Input.GetKey(KeyCode.UpArrow))
         {
-            Vector3 offset = new Vector3();
-            Vector3 bombSpawnPos = transform.position + inOffset
+            verticalMovement += acceleration * Time.deltaTime;
+            if (Mathf.Abs(verticalMovement) >= maxSpeed)
+            {
+                verticalMovement = maxSpeed;
+            }
         }
-    }
 
+        else if (Input.GetKey(KeyCode.DownArrow))
+        {
+            verticalMovement -= acceleration * Time.deltaTime;
+            if (Mathf.Abs(verticalMovement) >= maxSpeed)
+            {
+                verticalMovement = -maxSpeed;
+            }
+        }
+
+        //vertical decel
+        else
+        {
+            if (verticalMovement > 0)
+            {
+                verticalMovement -= deceleration * Time.deltaTime;
+                if (verticalMovement < 0)
+                {
+                    verticalMovement = 0;
+                }
+            }
+
+            if (verticalMovement < 0)
+            {
+                verticalMovement += deceleration * Time.deltaTime;
+                if (verticalMovement > 0)
+                {
+                    verticalMovement = 0;
+                }
+            }
+        }
+
+        //horizontal movement
+        if (Input.GetKey(KeyCode.LeftArrow))
+        {
+            horizontalMovement -= acceleration * Time.deltaTime;
+            if (Mathf.Abs(horizontalMovement) >= maxSpeed)
+            {
+                horizontalMovement = -maxSpeed;
+            }
+        }
+
+        else if (Input.GetKey(KeyCode.RightArrow))
+        {
+            horizontalMovement += acceleration * Time.deltaTime;
+            if (Mathf.Abs(horizontalMovement) >= maxSpeed)
+            {
+                horizontalMovement = maxSpeed;
+            }
+        }
+
+        //horizontal decel
+        else
+        {
+            if (horizontalMovement > 0)
+            {
+                horizontalMovement -= deceleration * Time.deltaTime;
+                if (horizontalMovement < 0)
+                {
+                    horizontalMovement = 0;
+                }
+            }
+
+            if (horizontalMovement < 0)
+            {
+                horizontalMovement += deceleration * Time.deltaTime;
+                if (horizontalMovement > 0)
+                {
+                    horizontalMovement = 0;
+                }
+            }
+        }
+
+        Vector3 movementDirection = new Vector3(horizontalMovement, verticalMovement, 0f) * Time.deltaTime;
+        transform.position += movementDirection;
+    }
 }
