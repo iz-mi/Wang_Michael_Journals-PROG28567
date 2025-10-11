@@ -28,6 +28,7 @@ public class Player : MonoBehaviour
         acceleration = maxSpeed / accelerationTime;
         deceleration = maxSpeed / decelerationTime;
         PlayerMovement();
+        //bombRing();
     }
 
     public void PlayerMovement()
@@ -117,4 +118,34 @@ public class Player : MonoBehaviour
         Vector3 movementDirection = new Vector3(horizontalMovement, verticalMovement, 0f) * Time.deltaTime;
         transform.position += movementDirection;
     }
+
+    /*
+    public void bombRing()
+    {
+        if (Input.GetKeyDown(KeyCode.Z))
+        {
+            float ringRadius = 3f;
+            float ringDuration = 5f;
+
+            Vector2 playerCenter = transform.position;
+
+            Vector2 bombPos1 = playerCenter + new Vector2(0f, ringRadius);
+            Vector2 bombPos2 = playerCenter + new Vector2(ringRadius, 0f);
+            Vector2 bombPos3 = playerCenter + new Vector2(0f, -ringRadius);
+            Vector2 bombPos4 = playerCenter + new Vector2(-ringRadius, 0f);
+
+            GameObject bomb1 = Instantiate(bombPrefab, (Vector3)bombPos1, Quaternion.identity);
+            GameObject bomb2 = Instantiate(bombPrefab, (Vector3)bombPos2, Quaternion.identity);
+            GameObject bomb3 = Instantiate(bombPrefab, (Vector3)bombPos3, Quaternion.identity);
+            GameObject bomb4 = Instantiate(bombPrefab, (Vector3)bombPos4, Quaternion.identity);
+        
+            Destroy(bomb1, ringDuration);
+            Destroy(bomb2, ringDuration);
+            Destroy(bomb3, ringDuration);
+            Destroy(bomb4, ringDuration);
+        }
+    }
+    */
 }
+
+
