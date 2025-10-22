@@ -52,7 +52,7 @@ public class BombManager : MonoBehaviour
             float yPos = transform.position.y + Mathf.Sin(bombAngle * Mathf.Deg2Rad) * ringRadius;
             
             Vector2 spawnPos = new Vector2(xPos, yPos);
-            GameObject bomb = Instantiate(bombPrefab, (Vector3)spawnPos, Quaternion.identity);
+            GameObject bomb = Instantiate(bombPrefab, spawnPos, Quaternion.identity);
             
             //SET THE BOMB AS A CHILD OR NOTHING WORKS
             bomb.transform.SetParent(bombRingCenter);

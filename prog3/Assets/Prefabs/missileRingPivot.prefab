@@ -45,6 +45,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   rotationSpeed: 60
-  ringLifetime: 1
+  ringLifetime: 3
   movespeed: 2
   playerPrefab: {fileID: 3642732873372032436, guid: abc125f00ae369940b2c5c0275186637, type: 3}
