@@ -6,22 +6,44 @@ public class PlayerController : MonoBehaviour
     private Rigidbody2D rigbod;
     private FacingDirection facing = FacingDirection.right;
 
+    //checkGround var
     public Transform footHitbox;
     public float footHitboxWidth = 0.1f;
     public LayerMask groundLayer;
 
-    //create public variables for apex height and apex time
+    //jump & gravity var
     public float jumpApexHeight = 2f;
     public float jumpApexTime = 0.1f;
-
     private float gravity;
     private float initialJumpVelocity;
     private float currentJumpVelocity;
-
     public float terminalSpeed = -10f;
-
+    
+    //coyote time var
     public float coyoteTime = 0.5f;
     private float coyoteTimeTimer;
+
+    //dash mechanics
+    public float dashSpeed = 10f;
+    public float dashDuration = 0.2f;
+    public float dashCooldown = 0.5f;
+
+    //check isDash for movableBox interactions
+    private bool isDashing = false;
+    private float dashRemaining = 0f;
+    private float dashCooldownTimer = 0f;
+    private float dashDirection = 1f;
+
+    //wall jump var
+    public Transform leftWallCheck;
+    public Transform rightWallCheck;
+    public float wallCheckHitbox = 0.1f;
+    public float wallJumpSpeed = 5f;
+    private float wallJumpLaunch = 0f;
+
+    //double jump var
+    public int doubleJumps = 1;
+    private int doubleJumpsRemaining;
 
     public enum FacingDirection
     {
@@ -51,7 +73,65 @@ public class PlayerController : MonoBehaviour
 
     private void MovementUpdate(Vector2 playerInput)
     {
-        //rigbod.linearVelocity = new Vector2(playerInput.x * moveSpeed, rigbod.linearVelocity.y);
+        //wall jump
+        bool LWallCheck = false;
+        bool RWallCheck = false;
+
+        bool onWallCheck = !IsGrounded() && (LWallCheck || RWallCheck);
+
+        //update player facing direction every frame otherwise the movable box gimmick doesn't work
+        if (playerInput.x > 0.1f)
+        {
+            facing = FacingDirection.right;
+        }
+        else if (playerInput.x < -0.1f)
+        {
+            facing = FacingDirection.left;
+        }
+
+        if (leftWallCheck != null)
+        {
+            LWallCheck = Physics2D.OverlapCircle(leftWallCheck.position, wallCheckHitbox, groundLayer);
+        }
+
+        if (rightWallCheck != null)
+        {
+            RWallCheck = Physics2D.OverlapCircle(rightWallCheck.position, wallCheckHitbox, groundLayer);
+        }
+
+        //tim allen zoom
+        if (dashCooldownTimer > 0f)
+        {
+            dashCooldownTimer -= Time.deltaTime;
+        }
+
+        if (isDashing)
+        {
+            dashRemaining -= Time.deltaTime;
+            if (dashRemaining <= 0f)
+            {
+                isDashing = false;
+                dashCooldownTimer = dashCooldown;
+            }
+        }
+
+        //dash keybind
+        //if (!isDashing && dashCooldownTimer <= 0f && IsGrounded() && Input.GetKeyDown(KeyCode.LeftShift))
+        if (!isDashing && dashCooldownTimer <= 0f && Input.GetKeyDown(KeyCode.LeftShift))
+        {
+            isDashing = true;
+            dashRemaining = dashDuration;
+
+            if (playerInput.x > 0.1f)
+            {
+                dashDirection = 1f;
+            }
+
+            else if (playerInput.x < -0.1f)
+            {
+                dashDirection = -1f;
+            }
+        }
 
         //coyote time timer calc
         if (IsGrounded())
@@ -65,14 +145,57 @@ public class PlayerController : MonoBehaviour
         }
         
         //horizontal movement
-        float horizontalPlayerMovement = playerInput.x * moveSpeed;
+        float horizontalPlayerMovement;
 
-        //jump controls
-        //if (Input.GetKeyDown(KeyCode.Space) && IsGrounded())
-        if (Input.GetKeyDown(KeyCode.Space) && coyoteTimeTimer > 0f)
+        if (isDashing)
+        {
+            horizontalPlayerMovement = dashDirection * dashSpeed;
+        }
+        else if (wallJumpLaunch != 0f)
+        {
+            horizontalPlayerMovement = wallJumpLaunch;
+        }
+        else
+        {
+            horizontalPlayerMovement = playerInput.x * moveSpeed;
+        }
+
+        //OLD JUMP MECHANICS (no wall check)
+        /*if (Input.GetKeyDown(KeyCode.Space) && coyoteTimeTimer > 0f && !isDashing)
         {
             currentJumpVelocity = initialJumpVelocity;
             coyoteTimeTimer = 0f;
+        }*/
+
+        //NEW JUMP MECHANICS
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            if (onWallCheck && !isDashing)
+            {
+                currentJumpVelocity = initialJumpVelocity;
+
+                float wallDirection;
+
+                if (LWallCheck)
+                {
+                    wallDirection = 1f;
+                }
+                else
+                {
+                    wallDirection = -1f;
+                }
+
+                wallJumpLaunch = wallDirection * wallJumpSpeed;
+
+                coyoteTimeTimer = 0f;
+            }
+
+            //normal jump
+            else if (coyoteTimeTimer > 0f && !isDashing && IsGrounded())
+            {
+                currentJumpVelocity = initialJumpVelocity;
+                coyoteTimeTimer = 0f;
+            }
         }
 
         currentJumpVelocity += gravity * Time.deltaTime;
@@ -90,6 +213,9 @@ public class PlayerController : MonoBehaviour
         }
 
         rigbod.linearVelocity = new Vector2(horizontalPlayerMovement, currentJumpVelocity);
+        
+
+        wallJumpLaunch = 0f;
     }
 
     public bool IsWalking()
@@ -121,7 +247,16 @@ public class PlayerController : MonoBehaviour
             Debug.Log("return false");
             return false;
         }
+    }
 
+    public bool IsDashing()
+    {
+        return isDashing;
+    }
+
+    public float GetDashDirection()
+    {
+        return dashDirection;
     }
 
     public FacingDirection GetFacingDirection()
