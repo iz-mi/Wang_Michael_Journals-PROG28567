@@ -59,6 +59,9 @@ public class PlayerController : MonoBehaviour
 
         gravity = (-2f * jumpApexHeight) / (jumpApexTime * jumpApexTime);
         initialJumpVelocity = (2f * jumpApexHeight) / jumpApexTime;
+
+        //double jump
+        doubleJumpsRemaining = doubleJumps;
     }
 
     void Update()
@@ -137,6 +140,7 @@ public class PlayerController : MonoBehaviour
         if (IsGrounded())
         {
             coyoteTimeTimer = coyoteTime;
+            doubleJumpsRemaining = doubleJumps;
         }
 
         else
@@ -160,16 +164,24 @@ public class PlayerController : MonoBehaviour
             horizontalPlayerMovement = playerInput.x * moveSpeed;
         }
 
-        //OLD JUMP MECHANICS (no wall check)
-        /*if (Input.GetKeyDown(KeyCode.Space) && coyoteTimeTimer > 0f && !isDashing)
-        {
-            currentJumpVelocity = initialJumpVelocity;
-            coyoteTimeTimer = 0f;
-        }*/
-
         //NEW JUMP MECHANICS
-        if (Input.GetKeyDown(KeyCode.Space))
+        if (Input.GetKeyDown(KeyCode.Space) && !isDashing)
         {
+            if (coyoteTimeTimer > 0f)
+            {
+                currentJumpVelocity = initialJumpVelocity;
+                coyoteTimeTimer = 0f;
+            }
+
+            else if (doubleJumpsRemaining > 1)
+            {
+                currentJumpVelocity = initialJumpVelocity;
+                doubleJumpsRemaining--;
+            }
+
+
+            //wall jump mechanics - shelved
+            /*
             if (onWallCheck && !isDashing)
             {
                 currentJumpVelocity = initialJumpVelocity;
@@ -196,6 +208,7 @@ public class PlayerController : MonoBehaviour
                 currentJumpVelocity = initialJumpVelocity;
                 coyoteTimeTimer = 0f;
             }
+            */
         }
 
         currentJumpVelocity += gravity * Time.deltaTime;
@@ -214,7 +227,6 @@ public class PlayerController : MonoBehaviour
 
         rigbod.linearVelocity = new Vector2(horizontalPlayerMovement, currentJumpVelocity);
         
-
         wallJumpLaunch = 0f;
     }
 
